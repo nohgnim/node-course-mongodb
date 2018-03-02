@@ -7,6 +7,7 @@ let {User} = require('./models/user')
 
 let app = express()
 
+//Extracts the entire body portion of incoming requests and exposes it via req.body
 app.use(bodyParser.json())
 
 //Set up route
@@ -24,3 +25,5 @@ app.post('/todos', (req, res) => {
 app.listen(3000, () => {
     console.log('Started on port 3000.')
 })
+
+module.exports = {app}
