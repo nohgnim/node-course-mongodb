@@ -6,6 +6,8 @@ let {mongoose} = require('./db/mongoose')
 let {Todo} = require('./models/todo')
 let {User} = require('./models/user')
 
+const port = process.env.PORT || 3000
+
 let app = express()
 
 //Extracts the entire body portion of incoming requests and exposes it via req.body
@@ -50,8 +52,8 @@ app.get('/todos/:id', (req, res) => {
     res.status(400).send(err)
 }
 
-app.listen(3000, () => {
-    console.log('Started on port 3000.')
+app.listen(port, () => {
+    console.log(`Started on port ${port}.`)
 })
 
 module.exports = {app}
