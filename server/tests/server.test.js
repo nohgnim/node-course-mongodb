@@ -137,3 +137,8 @@ describe('Remove functions', ()=>{
             })
     })
 })
+
+describe('Update todos', ()=>{
+    //Should only be able to update text or completed
+    //CompletedAt should return null if completed is false
+})

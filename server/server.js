@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const {ObjectID} = require('mongodb')
+const _ = require('lodash')
 
 let {mongoose} = require('./db/mongoose')
 let {Todo} = require('./models/todo')
@@ -79,4 +80,33 @@ app.delete('/todos/:id', (req, res) => {
     })
 })
 
+//Http patch method used to update
+app.patch('/todos/:id', (req, res) => {
+    let id = req.params.id
+    //Use pick to make sure that users are only able to update fields that they are allowed to
+    let body = _.pick(req.body, ['text', 'completed'])
+    console.log(body)
+
+    if(!ObjectID.isValid(id)){
+        res.status(404).send()
+        return console.log('Id is not valid')
+    }
+
+    //Check to see that completed is a boolean and is set to true
+    if(_.isBoolean(body.completed) && body.completed){
+        body.completedAt = new Date().getTime()
+    }else{
+        body.completed = false
+        body.completedAt = null
+    }
+
+    Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
+        if(!todo){
+            return res.status(404).send()
+        }
+        res.send({todo})
+    }).catch((err) => {
+        res.status(400).send()
+    })
+})
 module.exports = {app}
