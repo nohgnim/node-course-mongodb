@@ -4,12 +4,25 @@ const {app} = require('./../server')
 const {Todo} = require('./../models/todo')
 const {ObjectId} = require('mongodb')
 
+//Seed data
 const todos = [{
     _id: new ObjectId(),
     text: 'First todo'
 }, {
     _id: new ObjectId(),
-    text: 'Second todo'
+    text: 'Second todo',
+    completed: true,
+    CompletedAt: 8910
+}, {
+    _id: new ObjectId(),
+    text: 'Third todo',
+    completed: false,
+    CompletedAt: null
+}, {
+    _id: new ObjectId(),
+    text: 'Fourth todo',
+    completed: true,
+    CompletedAt: 879887
 }]
 
 //Deletes all the records out of the database each time the test runs
@@ -20,7 +33,7 @@ beforeEach((done) => {
     }).then(() => done())
 })
 
-describe('Todo get', ()=>{
+describe('GET todos', ()=>{
     test('Should create a new todo', (done)=>{
         let text = 'Poop'
     
@@ -56,7 +69,7 @@ describe('Todo get', ()=>{
                 }
     
                 Todo.find().then((todos) => {
-                    expect(todos.length).toBe(2)
+                    expect(todos.length).toBe(4)
                     done()
                 }).catch((e) => done(e))
             })
@@ -68,7 +81,7 @@ describe('Todo get', ()=>{
             .get('/todos')
             .expect(200)
             .expect((res) => {
-                expect(res.body.todos.length).toBe(2)
+                expect(res.body.todos.length).toBe(4)
             })
             .end(done)
     })
@@ -98,7 +111,7 @@ describe('Todo get', ()=>{
     })
 })
 
-describe('Remove functions', ()=>{
+describe('Delete todos/:id', ()=>{
     //Test delete route
     test('Should return 404 if not an object id', (done)=>{
         request(app)
@@ -138,7 +151,48 @@ describe('Remove functions', ()=>{
     })
 })
 
-describe('Update todos', ()=>{
-    //Should only be able to update text or completed
-    //CompletedAt should return null if completed is false
+describe('PATCH /todos/:id', ()=>{
+    //Should update the todo
+    test('Should update todo', (done) => {
+        //Grab id of third item
+        let hexId = todos[2]._id.toHexString()
+        
+        //Update the text, set completed to true
+        //Verify response body = text sent, completed is true, completedAt is a number
+        request(app)
+            .patch(`/todos/${hexId}`)
+            .send({
+                text: 'Update my todo',
+                completed: true
+            })
+            .expect(200)
+            .expect((res)=>{
+                expect(res.body.todo.text).toBe('Update my todo')
+                expect(res.body.todo.completed).toBe(true)
+                expect(res.body.todo.completedAt).toBeGreaterThan(0)
+            })
+            .end(done)
+    })
+
+    //Should clear completedAt when todo is not completed
+    test('Should clear completedAt when todo is not completed', (done) => {
+        //Grab id of fourth todo item
+        let hexId = todos[3]._id.toHexString()
+
+        request(app)
+            .patch(`/todos/${hexId}`)
+            .send({
+                completed: false,
+                text: 'Updated todo'
+            })
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.completed).toBe(false)
+                expect(res.body.todo.completedAt).toBe(null)
+            })
+            .end(done)
+        //Set completed to false
+        //200
+        //Verify response body, completed is false, completedAt is null
+    })
 })
