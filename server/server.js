@@ -110,4 +110,22 @@ app.patch('/todos/:id', (req, res) => {
         res.status(400).send()
     })
 })
+
+//POST /users
+app.post('/users', (req, res) => {
+    //Limit the request body to email and password
+    let body = _.pick(req.body, ['email', 'password'])
+    console.log(body)
+    //Create user object
+    let user = new User(body)
+    user.save().then(()=>{
+        return user.generateAuthToken()
+    }).then((token) => {
+        //Create a custom header using x-
+        res.header('x-auth', token).send(user)
+    }).catch((err) => {
+        res.status(400).send(err)
+    })
+})
+
 module.exports = {app}
