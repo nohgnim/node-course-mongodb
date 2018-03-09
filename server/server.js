@@ -7,6 +7,7 @@ const _ = require('lodash')
 let {mongoose} = require('./db/mongoose')
 let {Todo} = require('./models/todo')
 let {User} = require('./models/user')
+let {authenticate} = require('./middleware/authenticate')
 
 const port = process.env.PORT || 3000
 
@@ -109,6 +110,10 @@ app.patch('/todos/:id', (req, res) => {
     }).catch((err) => {
         res.status(400).send()
     })
+})
+
+app.get('/users/me', authenticate, (req, res) => {
+    res.send(req.user)
 })
 
 //POST /users
