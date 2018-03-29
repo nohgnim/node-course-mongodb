@@ -134,6 +134,15 @@ app.post('/users', (req, res) => {
     })
 })
 
+// post /users/logout
+app.delete('/users/me/token', authenticate, (req, res) => {
+    req.user.removeToken(req.token).then(()=>{
+        res.status(200).send()
+    }), () => {
+        res.status(400).send()
+    }
+})
+
 // POST /users/login {email, password}
 app.post('/users/login', (req, res) => {
     var body = _.pick(req.body, ['email', 'password'])
