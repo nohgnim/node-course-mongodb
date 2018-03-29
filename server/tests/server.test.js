@@ -255,3 +255,51 @@ describe('POST /users', ()=>{
         done()
     })
 })
+
+describe('POST /users/login', ()=>{
+    test('Should login user and return auth token', (done) => {
+
+        request(app)
+            .post('/users/login')
+            .send({
+                email: users[1].email, 
+                password: users[1].password
+            })
+            .expect(200)
+            .expect((res) => {
+                expect(res.headers['x-auth']).toBeDefined()
+            })
+            .end((err, res)=>{
+                if(err){
+                    return done(err)
+                }
+                User.findById(users[1]._id).then((user) => {
+                    expect(user.tokens[0].token).toEqual(res.headers['x-auth'])
+                    expect(user.tokens[0].access).toEqual('auth')
+                    done()
+                }).catch((err)=> done(err))
+            })
+        })
+    test('Should reject invalid login', (done) => {
+
+        request(app)
+            .post('/users/login')
+            .send({
+                email: 'blah@blah.com', 
+                password: 'someinvalidpw'
+            })
+            .expect(400)
+            .expect((res) => {
+                expect(res.headers['x-auth']).toBeUndefined()
+            })
+            .end((err, res)=>{
+                if(err){
+                    return done(err)
+                }
+                User.findById(users[1]._id).then((user) => {
+                    expect(user.tokens.length).toBe(0)
+                    done()
+                }).catch((err)=> done(err))
+            })
+        })
+})
